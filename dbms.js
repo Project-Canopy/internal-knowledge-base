@@ -6,49 +6,69 @@ var app = express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 
-var connection = mysql.createConnection({
+
+var pool = mysql.createPool({
     host : 'localhost',
     user : 'root',
     password : 'ryosei2K11213!',
-    database: 'tree_db'
-})
+    database : 'tree_db'
+});
 
-app.post("/register", function(req, res){
+
+app.post("/insert_tree", function(req, res){
     console.log(req.body);
-    var person = {
-        first_name: req.body.first_name,
-        last_name: req.body.last_name
+    var tree = {
+        botanical: req.body.botanical,
+        somali: req.body.somali
     };
-    pool.query('INSERT INTO employees SET ?', person, function(err, result) {
+    pool.query('INSERT INTO tree SET ?', tree, function(err, result) {
         if (err) throw err;
-        res.send("New User Added!!");
+        res.send("New Tree Added!!");
         //res.redirect("/");
     });
 });
 
-app.post("/update", function(req, res){
-    var id = req.body.id;
-    var newName = {
-        first_name: req.body.new_first_name,
-        last_name: req.body.new_last_name
-    };
-    // let sql = 'UPDATE employees SET first_name=${newName.newFirstName}, last_name=${newName.newLastName} WHERE id=${newName.id}'
-    let sql = 'UPDATE employees SET ? WHERE id=' + id;
-    pool.query(sql, newName, function(err, result) {
+app.post("/update_tree", function(req, res){
+    var tree_to_update = req.body.botanical;
+    var q = `SELECT botanical_name FROM tree WHERE botanical_name= "${tree_to_update}"`;
+
+    pool.query(q, function(err, results){
         if (err) throw err;
-        res.send("Updated user!!");
-        res.redirect("/");
-    });
+        var tree_name = results[0].botanical_name
+        res.render('dbms_update_tree', {tree_name: tree_name});
+    })
+    
 });
 
+// app.post("/finish_update", function(err, results){
+
+// })
+
+
+// app.post("/update", function(req, res){
+//     var id = req.body.id;
+//     var newName = {
+//         first_name: req.body.new_first_name,
+//         last_name: req.body.new_last_name
+//     };
+//     // let sql = 'UPDATE employees SET first_name=${newName.newFirstName}, last_name=${newName.newLastName} WHERE id=${newName.id}'
+//     let sql = 'UPDATE employees SET ? WHERE id=' + id;
+//     pool.query(sql, newName, function(err, result) {
+//         if (err) throw err;
+//         res.send("Updated user!!");
+//         res.redirect("/");
+//     });
+// });
+
 app.get("/", function(req, res){
-    //Find user count
-    var q = "SELECT COUNT(*) AS count FROM employees";
+    
+    //Find Tree count
+    var q = "SELECT COUNT(*) AS count FROM tree";
     pool.query(q, function(err, results){
         if (err) throw err;
         var count = results[0].count
         //res.send("We have " + count + " users in database");
-        res.render('home', {count: count});
+        res.render('dbms_home', {count: count});
     });
 });
 

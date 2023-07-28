@@ -1,0 +1,14 @@
+<h1>Welcome to Tree Management System</h1>
+<p>We currently have <strong><%=count%></strong> trees in our system!!
+</p>
+
+<form method="POST" action="/insert_tree">
+    <input type="text" name="botanical" class="form" placeholder="Enter Botanical Name">
+    <input type="text" name="somali" class="form" placeholder="Enter Somali Name">
+    <button>Add a New Tree!</button>
+</form>
+
+<form method="POST" action="/update_tree">
+    <input type="text" name="botanical" class="form" placeholder="Enter a Tree!">
+    <button>Update</button>
+</form>
