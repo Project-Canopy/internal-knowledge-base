@@ -1,0 +1,34 @@
+<h1>This is the search result page.</h1>
+<body>
+    <div class="tree-data">
+<h2>Display Data using Node.js & MySQL</h2>
+    <table border="1">
+        <tr>
+            <th>Botanical Name</th>
+            <th>Min Rainfall</th>
+            <th>Max Rainfall</th>
+            <th>Min Altitude</th>
+            <th>Max Altitude</th>
+        </tr>
+        
+        <%
+        if(treeData.length!=0){
+        var i=1;
+        treeData.forEach(function(results){
+        %>
+        <tr>
+            <td><%=results.botanical_name %></td>
+            <td><%=results.minimum_rainfall %></td>
+            <td><%=results.maximum_rainfall %></td>
+            <td><%=results.lowest_altitude %></td>
+            <td><%=results.highest_altitude %></td>
+        </tr>
+        <%  i++; }) %>
+        <% } else{ %>
+            <tr>
+                <td colspan="7">No Data Found</td>
+            </tr>
+        <% } %>
+    </table>
+    </div>
+</body>
