@@ -14,6 +14,30 @@ var pool = mysql.createPool({
     database : 'tree_db'
 });
 
+app.get("/search", function(req, res){
+
+    let rainfall_min = req.query.rainfall_min;
+    let altitude_min = req.query.altitude_min;
+    let aaa = req.query.aaa;
+    var q = `SELECT botanical_name, 
+                MIN(rainfall_min) AS minimum_rainfall,
+                MAX(rainfall_max) AS maximum_rainfall,
+                MIN(altitude_min) AS lowest_altitude,
+                MAX(altitude_max) AS highest_altitude
+            FROM tree
+            JOIN climatic_zone
+	            ON climatic_zone.tree_id = tree.id
+            JOIN climatic
+	            ON climatic.id = climatic_zone.climatic_id
+            WHERE rainfall_max > "${rainfall_min}" 
+                AND altitude_max > "${altitude_min}"
+            GROUP BY tree.id
+            ORDER BY tree.id`
+    console.log(q)
+    pool.query(q, function(req, res){
+        console.log(res)
+    })
+})
 
 app.post("/insert_tree", function(req, res){
     console.log(req.body);
