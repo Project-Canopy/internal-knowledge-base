@@ -21,11 +21,23 @@ app.get("/search_trees", function(req, res){
     let rainfall_max = req.query.rainfall_max
     let altitude_min = req.query.altitude_min;
     let altitude_max = req.query.altitude_max;
-    var q = `SELECT botanical_name, 
-                MIN(rainfall_min) AS minimum_rainfall,
-                MAX(rainfall_max) AS maximum_rainfall,
-                MIN(altitude_min) AS lowest_altitude,
-                MAX(altitude_max) AS highest_altitude
+    let select_list = req.query.select
+    let select_statement = "SELECT botanical_name"
+    if (select_list.includes("Minimum Rainfall")) {
+        select_statement += ", MIN(rainfall_min) AS minimum_rainfall"
+    }
+    if (select_list.includes("Maximum Rainfall")) {
+        select_statement += ", Max(rainfall_min) AS maximum_rainfall"
+    }
+    if (select_list.includes("Lowest Altitude")) {
+        select_statement += ", MIN(altitude_min) AS lowest_altitude"
+    }
+    if (select_list.includes("Highest Altitude")) {
+        select_statement += ", MAX(altitude_max) AS highest_altitude"
+    }
+    console.log(select_list)
+    var q = select_statement +
+            `
             FROM tree
             JOIN climatic_zone
 	            ON climatic_zone.tree_id = tree.id
@@ -37,20 +49,22 @@ app.get("/search_trees", function(req, res){
                 AND altitude_max >= "${altitude_max}"
             GROUP BY tree.id
             ORDER BY tree.id`
-    
+    console.log(q)
     pool.query(q, function(err, results){
         console.log(results)
-        res.render('search_result', {title: 'Tree List', treeData: results});
+        res.render('search_result', {title: 'Tree List', select_list: select_list, treeData: results});
         
     });
 })
 
 app.post("/search_trees", function(req, res){
+    console.log(req.body.select);
     var search_info = {
         rainfall_min: req.body.rainfall_min,
         rainfall_max: req.body.rainfall_max,
         altitude_min: req.body.altitude_min,
-        altitude_max: req.body.altitude_max
+        altitude_max: req.body.altitude_max,
+        select: req.body.select
     }
     const qs = querystring.stringify(search_info);
     res.redirect("/search_trees?" + qs);
@@ -108,9 +122,11 @@ app.get("/", function(req, res){
     var q = "SELECT COUNT(*) AS count FROM tree";
     pool.query(q, function(err, results){
         if (err) throw err;
-        var count = results[0].count
+        var count = results[0].count;
+        const select_option = ["Minimum Rainfall", "Maximum Rainfall", 
+    "Lowest Altitude", "Highest Altitude"];
         //res.send("We have " + count + " users in database");
-        res.render('dbms_home', {count: count});
+        res.render('dbms_home', {count: count, select_option: select_option});
     });
 });
 

@@ -18,5 +18,13 @@
     <input type="text" name="rainfall_max" class="form" placeholder="Enter Maximum Rainfall">
     <input type="text" name="altitude_min" class="form" placeholder="Enter Minimum Altitude">
     <input type="text" name="altitude_max" class="form" placeholder="Enter Maximum Altitude">
+    <select name="select" multiple>
+        <% for(var count = 0; count < select_option.length; count++) { %>
+            <option value="<%=select_option[count] %>">
+                <%= select_option[count]%>
+            </option>
+            
+        <% } %>
+    </select>
     <button>Search</button>
 </form>

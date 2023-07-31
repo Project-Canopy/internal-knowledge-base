@@ -5,11 +5,16 @@
     <table border="1">
         <tr>
             <th>Botanical Name</th>
-            <th>Min Rainfall</th>
-            <th>Max Rainfall</th>
-            <th>Min Altitude</th>
-            <th>Max Altitude</th>
+            <% if(select_list.length != 0)  {%>
+                <% for(var count = 0; count < select_list.length; count++) { %>
+                    <th>
+                        <%= select_list[count]%>
+                    </th>
+                
+                <% } %>
+            <% } %>
         </tr>
+        
         
         <%
         if(treeData.length!=0){
@@ -18,10 +23,16 @@
         %>
         <tr>
             <td><%=results.botanical_name %></td>
-            <td><%=results.minimum_rainfall %></td>
-            <td><%=results.maximum_rainfall %></td>
-            <td><%=results.lowest_altitude %></td>
-            <td><%=results.highest_altitude %></td>
+            <% for(var count = 0; count < select_list.length; count++) { %>
+                <td>
+                    <%=Object.values(results)[count+1] %>
+                </td>
+            
+            <% } %>
+            
+            
+            <!-- <td><%=results.lowest_altitude %></td>
+            <td><%=results.highest_altitude %></td> -->
         </tr>
         <%  i++; }) %>
         <% } else{ %>
