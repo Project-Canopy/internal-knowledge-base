@@ -27,7 +27,7 @@ app.get("/search_trees", function(req, res){
         select_statement += ", MIN(rainfall_min) AS minimum_rainfall"
     }
     if (select_list.includes("Maximum Rainfall")) {
-        select_statement += ", Max(rainfall_min) AS maximum_rainfall"
+        select_statement += ", Max(rainfall_max) AS maximum_rainfall"
     }
     if (select_list.includes("Lowest Altitude")) {
         select_statement += ", MIN(altitude_min) AS lowest_altitude"
@@ -43,13 +43,13 @@ app.get("/search_trees", function(req, res){
 	            ON climatic_zone.tree_id = tree.id
             JOIN climatic
 	            ON climatic.id = climatic_zone.climatic_id
-            WHERE rainfall_min <= "${rainfall_min}" 
-                AND rainfall_max >= "${rainfall_max}"
-                AND altitude_min <= "${altitude_min}"
-                AND altitude_max >= "${altitude_max}"
             GROUP BY tree.id
+            HAVING MIN(rainfall_min) <= "${rainfall_min}" 
+                AND MAX(rainfall_max) >= "${rainfall_max}"
+                AND MIN(altitude_min) <= "${altitude_min}"
+                AND MAX(altitude_max) >= "${altitude_max}"
+            
             ORDER BY tree.id`
-    console.log(q)
     pool.query(q, function(err, results){
         console.log(results)
         res.render('search_result', {title: 'Tree List', select_list: select_list, treeData: results});
@@ -58,7 +58,6 @@ app.get("/search_trees", function(req, res){
 })
 
 app.post("/search_trees", function(req, res){
-    console.log(req.body.select);
     var search_info = {
         rainfall_min: req.body.rainfall_min,
         rainfall_max: req.body.rainfall_max,
