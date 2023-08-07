@@ -18,10 +18,19 @@ var pool = mysql.createPool({
 app.get("/search_trees", function(req, res){
 
     let rainfall_min = req.query.rainfall_min;
-    let rainfall_max = req.query.rainfall_max
+    console.log(rainfall_min)
+    let rainfall_max = req.query.rainfall_max;
     let altitude_min = req.query.altitude_min;
     let altitude_max = req.query.altitude_max;
-    let select_list = req.query.select
+    let utilities = req.query.utilities;
+    let select_list = req.query.select;
+    if(typeof utilities == 'string'){
+        utilities = [utilities]
+    }
+    if(typeof select_list == 'string'){
+        select_list = [select_list]
+    }
+    console.log(utilities)
     let select_statement = "SELECT botanical_name"
     if (select_list.includes("Minimum Rainfall")) {
         select_statement += ", MIN(rainfall_min) AS minimum_rainfall"
@@ -35,7 +44,15 @@ app.get("/search_trees", function(req, res){
     if (select_list.includes("Highest Altitude")) {
         select_statement += ", MAX(altitude_max) AS highest_altitude"
     }
+    if (select_list.includes("Utilities") || utilities) {
+        select_statement += `, GROUP_CONCAT(DISTINCT CONCAT(CASE 
+                                                                WHEN utility_usage = 1 THEN utility_name 
+                                                                WHEN utility_usage = 2 THEN UPPER(utility_name)
+                                                            END)) as utility_list`
+    }
     console.log(select_list)
+    var having = 0
+    var and = 0
     var q = select_statement +
             `
             FROM tree
@@ -43,13 +60,73 @@ app.get("/search_trees", function(req, res){
 	            ON climatic_zone.tree_id = tree.id
             JOIN climatic
 	            ON climatic.id = climatic_zone.climatic_id
+            JOIN utility_usage
+                ON utility_usage.tree_id = tree.id
+            JOIN utility
+                ON utility.id = utility_usage.utility_id
             GROUP BY tree.id
-            HAVING MIN(rainfall_min) <= "${rainfall_min}" 
-                AND MAX(rainfall_max) >= "${rainfall_max}"
-                AND MIN(altitude_min) <= "${altitude_min}"
-                AND MAX(altitude_max) >= "${altitude_max}"
-            
-            ORDER BY tree.id`
+           `
+    if(rainfall_min) {
+        if(having == 0){
+            q += "\nHAVING"
+            having = 1
+        }
+        if(and == 1) {
+            q += "\nAND"
+        } else { and = 1}
+
+        q += ` MIN(rainfall_min) <= "${rainfall_min}"`
+    }
+    if(rainfall_max) {
+        if(having == 0){
+            q += "\nHAVING"
+            having = 1
+        }
+        if(and == 1) {
+            q += "\nAND"
+        } else { and = 1}
+
+        q += ` MAX(rainfall_max) >= "${rainfall_max}"`
+    }
+    if(altitude_min) {
+        if(having == 0){
+            q += "\nHAVING"
+            having = 1
+        }
+        if(and == 1) {
+            q += "\nAND"
+        } else { and = 1}
+
+        q += ` MIN(altitude_min) <= "${altitude_min}"`
+    }
+    if(altitude_max) {
+        if(having == 0){
+            q += "\nHAVING"
+            having = 1
+        }
+        if(and == 1) {
+            q += "\nAND"
+        } else { and = 1}
+
+        q += ` MAX(altitude_max) >= "${altitude_max}"`
+    }
+    if(utilities){
+        if(having == 0){
+            q += "\nHAVING"
+            having = 1
+        }
+        if(and == 1) {
+            q += "\nAND"
+        } else { and = 1}
+        for (var count=0; count < utilities.length; count++) {
+            if(count > 0){
+                q += ` AND`
+            }
+            q += ` utility_list LIKE "%${utilities[count]}%"`
+        }
+    }
+    q += ` ORDER BY tree.id`
+    console.log(q)
     pool.query(q, function(err, results){
         console.log(results)
         res.render('search_result', {title: 'Tree List', select_list: select_list, treeData: results});
@@ -63,6 +140,7 @@ app.post("/search_trees", function(req, res){
         rainfall_max: req.body.rainfall_max,
         altitude_min: req.body.altitude_min,
         altitude_max: req.body.altitude_max,
+        utilities: req.body.utilities,
         select: req.body.select
     }
     const qs = querystring.stringify(search_info);
@@ -123,9 +201,13 @@ app.get("/", function(req, res){
         if (err) throw err;
         var count = results[0].count;
         const select_option = ["Minimum Rainfall", "Maximum Rainfall", 
-    "Lowest Altitude", "Highest Altitude"];
+    "Lowest Altitude", "Highest Altitude", "Utilities"];
+        const utilities_option = ["Toothbrush", "Toolhandles", "Timber", "Tannins", 
+                                "Soil Improvent", "Shelterbelt", "Sandune Fixation", 
+                                "Poles", "People Shade", "Nitrogen Fixation", "Medicine",
+                                "Livestock Shade", "Live Fencing"]
         //res.send("We have " + count + " users in database");
-        res.render('dbms_home', {count: count, select_option: select_option});
+        res.render('dbms_home', {count: count, select_option: select_option, utilities_option: utilities_option});
     });
 });
 
