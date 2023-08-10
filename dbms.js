@@ -4,6 +4,7 @@ var bodyParser = require("body-parser");
 var querystring = require("querystring");
 var app = express();
 
+
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
 
@@ -16,7 +17,8 @@ var pool = mysql.createPool({
 });
 
 app.get("/search_trees", function(req, res){
-
+    let english = req.query.english;
+    console.log(req.query)
     let rainfall_min = req.query.rainfall_min;
     console.log(rainfall_min)
     let rainfall_max = req.query.rainfall_max;
@@ -24,14 +26,29 @@ app.get("/search_trees", function(req, res){
     let altitude_max = req.query.altitude_max;
     let utilities = req.query.utilities;
     let select_list = req.query.select;
-    if(typeof utilities == 'string'){
+    if(utilities && typeof utilities == 'string'){
         utilities = [utilities]
     }
-    if(typeof select_list == 'string'){
+    if(select_list && typeof select_list == 'string'){
         select_list = [select_list]
+    }
+    if(english && typeof english == 'string'){
+        english = [english]
     }
     console.log(utilities)
     let select_statement = "SELECT botanical_name"
+    if (select_list.includes("Somali")) {
+        select_statement += ", somali_name"
+    }
+    if (select_list.includes("Arabic")) {
+        select_statement += ", arabic_name"
+    }
+    if (select_list.includes("English")) {
+        select_statement += ", english_name"
+    }
+    if (select_list.includes("Other Regional Spelling")) {
+        select_statement += ", GROUP_CONCAT(DISTINCT spelling)"
+    }
     if (select_list.includes("Minimum Rainfall")) {
         select_statement += ", MIN(rainfall_min) AS minimum_rainfall"
     }
@@ -50,12 +67,16 @@ app.get("/search_trees", function(req, res){
                                                                 WHEN utility_usage = 2 THEN UPPER(utility_name)
                                                             END)) as utility_list`
     }
+    
     console.log(select_list)
+    var where = 0
     var having = 0
     var and = 0
     var q = select_statement +
             `
             FROM tree
+            LEFT JOIN regional_spelling
+			    ON regional_spelling.tree_id = tree.id
             JOIN climatic_zone
 	            ON climatic_zone.tree_id = tree.id
             JOIN climatic
@@ -64,8 +85,26 @@ app.get("/search_trees", function(req, res){
                 ON utility_usage.tree_id = tree.id
             JOIN utility
                 ON utility.id = utility_usage.utility_id
-            GROUP BY tree.id
-           `
+            `
+    or = 0
+    if(english){
+        if(where == 0){
+            q += "\nWHERE"
+            where = 1
+        }
+        if(or == 1) {
+            q += "\nOR"
+        } else { or = 1}
+        for (var count=0; count < english.length; count++) {
+            if(count > 0){
+                q += ` OR`
+            }
+            q += ` english_name LIKE "%${english[count]}%"`
+        }
+    }
+
+    q += `GROUP BY tree.id`
+
     if(rainfall_min) {
         if(having == 0){
             q += "\nHAVING"
@@ -125,6 +164,7 @@ app.get("/search_trees", function(req, res){
             q += ` utility_list LIKE "%${utilities[count]}%"`
         }
     }
+    
     q += ` ORDER BY tree.id`
     console.log(q)
     pool.query(q, function(err, results){
@@ -136,6 +176,7 @@ app.get("/search_trees", function(req, res){
 
 app.post("/search_trees", function(req, res){
     var search_info = {
+        english: req.body.english,
         rainfall_min: req.body.rainfall_min,
         rainfall_max: req.body.rainfall_max,
         altitude_min: req.body.altitude_min,
@@ -200,16 +241,28 @@ app.get("/", function(req, res){
     pool.query(q, function(err, results){
         if (err) throw err;
         var count = results[0].count;
-        const select_option = ["Minimum Rainfall", "Maximum Rainfall", 
-    "Lowest Altitude", "Highest Altitude", "Utilities"];
+        const select_option = ["Somali", "Arabic", "English", "Other Regional Spelling", 
+                                "Minimum Rainfall", "Maximum Rainfall", 
+                                "Lowest Altitude", "Highest Altitude", "Utilities"];
+        const english_option = ["Apple Ring Acacia", "Egyptian Thorn", "Gum Arabic",
+                                "Umbrella Thorn", "Soapberry Tree", "Franklin-cense Tree", 
+                                "Myrrh Tree", "Common Tug Tree", "Yihib Nut Tree",
+                                "Doum Palm", "Pencil Cedar"];
         const utilities_option = ["Toothbrush", "Toolhandles", "Timber", "Tannins", 
                                 "Soil Improvent", "Shelterbelt", "Sandune Fixation", 
                                 "Poles", "People Shade", "Nitrogen Fixation", "Medicine",
-                                "Livestock Shade", "Live Fencing"]
+                                "Livestock Shade", "Live Fencing", "Intercropping", "Insecticide",
+                                "Honey", "Hedge", "Gums", "Fuel", "Fruit", "Fodder", "Eddible Leaves", 
+                                "Dyes", "Dead Fencing", "Charcoal", "Carving", "Amenity"]
         //res.send("We have " + count + " users in database");
-        res.render('dbms_home', {count: count, select_option: select_option, utilities_option: utilities_option});
+        res.render('dbms_home', {count: count, 
+                                select_option: select_option, 
+                                english_option: english_option,
+                                utilities_option: utilities_option}
+                                );
     });
 });
+
 
 app.listen(8080, function(){
     console.log("Server running on 8080!");
