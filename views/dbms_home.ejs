@@ -25,6 +25,24 @@
             
         <% } %>
     </select>
+    <select name="somali" multiple multiselect-search="true" multiselect-select-all="true" 
+    multiselect-max-items="3" onchange="console.log(this.selectedOptions)" placeholder="Enter Somali Name">
+        <% for(var count = 0; count < somali_option.length; count++) { %>
+            <option value="<%=somali_option[count] %>">
+                <%= somali_option[count]%>
+            </option>
+            
+        <% } %>
+    </select>
+    <select name="arabic" multiple multiselect-search="true" multiselect-select-all="true" 
+    multiselect-max-items="3" onchange="console.log(this.selectedOptions)" placeholder="Enter Arabic Name">
+        <% for(var count = 0; count < arabic_option.length; count++) { %>
+            <option value="<%=arabic_option[count] %>">
+                <%= arabic_option[count]%>
+            </option>
+            
+        <% } %>
+    </select>
     <input type="text" name="rainfall_min" class="form" placeholder="Enter Minimum Rainfall">
     <input type="text" name="rainfall_max" class="form" placeholder="Enter Maximum Rainfall">
     <input type="text" name="altitude_min" class="form" placeholder="Enter Minimum Altitude">

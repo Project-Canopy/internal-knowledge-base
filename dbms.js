@@ -19,6 +19,8 @@ var pool = mysql.createPool({
 app.get("/search_trees", function(req, res){
     let english = req.query.english;
     console.log(req.query)
+    let somali = req.query.somali;
+    let arabic = req.query.arabic;
     let rainfall_min = req.query.rainfall_min;
     console.log(rainfall_min)
     let rainfall_max = req.query.rainfall_max;
@@ -34,6 +36,12 @@ app.get("/search_trees", function(req, res){
     }
     if(english && typeof english == 'string'){
         english = [english]
+    }
+    if(somali && typeof somali == 'string'){
+        somali = [somali]
+    }
+    if(arabic && typeof arabic == 'string'){
+        arabic = [arabic]
     }
     console.log(utilities)
     let select_statement = "SELECT botanical_name"
@@ -100,6 +108,38 @@ app.get("/search_trees", function(req, res){
                 q += ` OR`
             }
             q += ` english_name LIKE "%${english[count]}%"`
+        }
+    }
+    
+    if(somali){
+        if(where == 0){
+            q += "\nWHERE"
+            where = 1
+        }
+        if(or == 1) {
+            q += "\nOR"
+        } else { or = 1}
+        for (var count=0; count < somali.length; count++) {
+            if(count > 0){
+                q += ` OR`
+            }
+            q += ` somali_name LIKE "%${somali[count]}%"`
+        }
+    }
+
+    if(arabic){
+        if(where == 0){
+            q += "\nWHERE"
+            where = 1
+        }
+        if(or == 1) {
+            q += "\nOR"
+        } else { or = 1}
+        for (var count=0; count < arabic.length; count++) {
+            if(count > 0){
+                q += ` OR`
+            }
+            q += ` arabic_name LIKE "%${arabic[count]}%"`
         }
     }
 
@@ -177,6 +217,8 @@ app.get("/search_trees", function(req, res){
 app.post("/search_trees", function(req, res){
     var search_info = {
         english: req.body.english,
+        somali: req.body.somali,
+        arabic: req.body.arabic,
         rainfall_min: req.body.rainfall_min,
         rainfall_max: req.body.rainfall_max,
         altitude_min: req.body.altitude_min,
@@ -247,7 +289,29 @@ app.get("/", function(req, res){
         const english_option = ["Apple Ring Acacia", "Egyptian Thorn", "Gum Arabic",
                                 "Umbrella Thorn", "Soapberry Tree", "Franklin-cense Tree", 
                                 "Myrrh Tree", "Common Tug Tree", "Yihib Nut Tree",
-                                "Doum Palm", "Pencil Cedar"];
+                                "Doum Palm", "Pencil Cedar", "Date Palm", "Toothbrush Tree",
+                                "Tamarind", "Tamarisk", "Spiny Desert Tree", "Chinese Date", 
+                                "Siris Tree", "Neem", "Ironwood", "Whistling Pine", "Red River Gum", 
+                                "African Mahogany", "Ipil-ipil Tree", "Hardbean", "Mesquite", 
+                                "Ghaf", "Algaroba", "Pepper Tree", "Corkwood Tree", "Cashew Nut", 
+                                "Soursop", "Sweetsop", "Sugarapple", "Papaya", "Lime", "Grapefruit", 
+                                "Coconut", "Mango", "Guava", "Indian Almond"];
+                                 
+        const somali_option = ["Garbi", "Galool", "Tugaar",
+                               "Cadaad", "Qurac", "Quud", "Yagcar", "Dheddin",
+                               "Dhamas", "Gud", "Mareer", "Garas", "Baar", "Dayib",
+                               "Timir", "Caday", "Raqay", "Dhuur", "Hareeri", "Xarar", "Gob",
+                                "Geed hindi", "Boordi", "Shawri", "Baxarasaaf", "Mahogony",
+                                "Geed walaayo", "Mirimiri", "Bibbo", "Anuune (weyn)", "Anuune (yare)",
+                                "Babbaay", "Liin", "Bombelmo", "Naarajiin", "Cambe", "Seytuun", "Beydaan"];
+
+        const arabic_option = ["Haraz", "Sunt", "Hashab, Alloba",
+                               "Seyal", "Heglig (Lalob)",
+                               "Balsam", "Mikah", "El Dom", "Ar Ar", "Nakl-el-Balah",
+                               "Araq", "Abai", "Atel, Tarfah", "Nabk", "Dakn-el-Bashna"
+                               , "Kafur", "Kaya", "Ghaf", "Filfilrafie", "Sisaban", "Mawaleh",
+                                "Bondog", "Mango", "Guwafa", "Luze"];
+
         const utilities_option = ["Toothbrush", "Toolhandles", "Timber", "Tannins", 
                                 "Soil Improvent", "Shelterbelt", "Sandune Fixation", 
                                 "Poles", "People Shade", "Nitrogen Fixation", "Medicine",
@@ -258,6 +322,8 @@ app.get("/", function(req, res){
         res.render('dbms_home', {count: count, 
                                 select_option: select_option, 
                                 english_option: english_option,
+                                somali_option: somali_option,
+                                arabic_option: arabic_option,
                                 utilities_option: utilities_option}
                                 );
     });
