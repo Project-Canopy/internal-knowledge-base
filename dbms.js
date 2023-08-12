@@ -57,6 +57,9 @@ app.get("/search_trees", function(req, res){
     if (select_list.includes("Other Regional Spelling")) {
         select_statement += ", GROUP_CONCAT(DISTINCT spelling)"
     }
+    if (select_list.includes("Climatic Zone")) {
+        select_statement += ", GROUP_CONCAT(DISTINCT climatic_zone)"
+    }
     if (select_list.includes("Minimum Rainfall")) {
         select_statement += ", MIN(rainfall_min) AS minimum_rainfall"
     }
@@ -284,7 +287,7 @@ app.get("/", function(req, res){
         if (err) throw err;
         var count = results[0].count;
         const select_option = ["Somali", "Arabic", "English", "Other Regional Spelling", 
-                                "Minimum Rainfall", "Maximum Rainfall", 
+                                "Climatic Zone","Minimum Rainfall", "Maximum Rainfall", 
                                 "Lowest Altitude", "Highest Altitude", "Utilities"];
         const english_option = ["Apple Ring Acacia", "Egyptian Thorn", "Gum Arabic",
                                 "Umbrella Thorn", "Soapberry Tree", "Franklin-cense Tree", 
