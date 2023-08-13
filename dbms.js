@@ -212,7 +212,7 @@ app.get("/search_trees", function(req, res){
     console.log(q)
     pool.query(q, function(err, results){
         console.log(results)
-        res.render('search_result', {title: 'Tree List', select_list: select_list, treeData: results});
+        res.render('search_result', {title: 'Tree List', select_list: select_list, treeData: results, english: english});
         
     });
 })
