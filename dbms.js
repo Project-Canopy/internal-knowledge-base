@@ -17,10 +17,12 @@ var pool = mysql.createPool({
 });
 
 app.get("/search_trees", function(req, res){
+    let filter = req.query;
     let english = req.query.english;
     console.log(req.query)
     let somali = req.query.somali;
     let arabic = req.query.arabic;
+    let climatic_zone = req.query.climatic_zone;
     let rainfall_min = req.query.rainfall_min;
     console.log(rainfall_min)
     let rainfall_max = req.query.rainfall_max;
@@ -43,6 +45,9 @@ app.get("/search_trees", function(req, res){
     if(arabic && typeof arabic == 'string'){
         arabic = [arabic]
     }
+    if(climatic_zone && typeof climatic_zone == 'string'){
+        climatic_zone = [climatic_zone]
+    }
     console.log(utilities)
     let select_statement = "SELECT botanical_name"
     if (select_list.includes("Somali")) {
@@ -55,10 +60,10 @@ app.get("/search_trees", function(req, res){
         select_statement += ", english_name"
     }
     if (select_list.includes("Other Regional Spelling")) {
-        select_statement += ", GROUP_CONCAT(DISTINCT spelling)"
+        select_statement += ", GROUP_CONCAT(DISTINCT spelling SEPARATOR ', ')"
     }
     if (select_list.includes("Climatic Zone")) {
-        select_statement += ", GROUP_CONCAT(DISTINCT climatic_zone)"
+        select_statement += ", GROUP_CONCAT(DISTINCT climatic_zone SEPARATOR ', ') AS climatic_zone"
     }
     if (select_list.includes("Minimum Rainfall")) {
         select_statement += ", MIN(rainfall_min) AS minimum_rainfall"
@@ -76,7 +81,7 @@ app.get("/search_trees", function(req, res){
         select_statement += `, GROUP_CONCAT(DISTINCT CONCAT(CASE 
                                                                 WHEN utility_usage = 1 THEN utility_name 
                                                                 WHEN utility_usage = 2 THEN UPPER(utility_name)
-                                                            END)) as utility_list`
+                                                            END) SEPARATOR ', ') as utility_list`
     }
     
     console.log(select_list)
@@ -146,6 +151,22 @@ app.get("/search_trees", function(req, res){
         }
     }
 
+    if(climatic_zone){
+        if(where == 0){
+            q += "\nWHERE"
+            where = 1
+        }
+        if(or == 1) {
+            q += "\nOR"
+        } else { or = 1}
+        for (var count=0; count < climatic_zone.length; count++) {
+            if(count > 0){
+                q += ` OR`
+            }
+            q += ` climatic_zone LIKE "%${climatic_zone[count]}%"`
+        }
+    }
+
     q += `GROUP BY tree.id`
 
     if(rainfall_min) {
@@ -209,10 +230,19 @@ app.get("/search_trees", function(req, res){
     }
     
     q += ` ORDER BY tree.id`
+    let filter_name = {english: "English Name Selected", somali: "Somali Name Selected", arabic: "Arabic Name Selected", 
+                        climatic_zone: "Selected Climatic Zone", rainfall_min: "Minimum Rainfall Entered", 
+                        rainfall_max: "Maximum Rainfall Entered", altitude_min: "Lowest Altitude Entered", 
+                        altitude_max: "Highest Altitude Entered", utilities: "Utilites Selected", select: "Data Selected"}
     console.log(q)
     pool.query(q, function(err, results){
         console.log(results)
-        res.render('search_result', {title: 'Tree List', select_list: select_list, treeData: results, english: english});
+        res.render('search_result', {title: 'Tree List', 
+                                    select_list: select_list, 
+                                    treeData: results, 
+                                    english: english,
+                                    filter: filter, 
+                                    filter_name: filter_name} );
         
     });
 })
@@ -222,6 +252,7 @@ app.post("/search_trees", function(req, res){
         english: req.body.english,
         somali: req.body.somali,
         arabic: req.body.arabic,
+        climatic_zone: req.query.climatic_zone,
         rainfall_min: req.body.rainfall_min,
         rainfall_max: req.body.rainfall_max,
         altitude_min: req.body.altitude_min,
@@ -314,6 +345,8 @@ app.get("/", function(req, res){
                                "Araq", "Abai", "Atel, Tarfah", "Nabk", "Dakn-el-Bashna"
                                , "Kafur", "Kaya", "Ghaf", "Filfilrafie", "Sisaban", "Mawaleh",
                                 "Bondog", "Mango", "Guwafa", "Luze"];
+        
+        const climatic_zone = ["Very Dry", "Lowland Dry", "Highland Dry", "Lowland Wet", "Highland Wet"]
 
         const utilities_option = ["Toothbrush", "Toolhandles", "Timber", "Tannins", 
                                 "Soil Improvent", "Shelterbelt", "Sandune Fixation", 
@@ -327,6 +360,7 @@ app.get("/", function(req, res){
                                 english_option: english_option,
                                 somali_option: somali_option,
                                 arabic_option: arabic_option,
+                                climatic_zone: climatic_zone,
                                 utilities_option: utilities_option}
                                 );
     });

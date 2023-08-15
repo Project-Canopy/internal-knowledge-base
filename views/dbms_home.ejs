@@ -43,6 +43,15 @@
             
         <% } %>
     </select>
+    <select name="climatic_zone" multiple multiselect-search="true" multiselect-select-all="true" 
+    multiselect-max-items="3" onchange="console.log(this.selectedOptions)" placeholder="Enter Climatic Zone">
+        <% for(var count = 0; count < climatic_zone.length; count++) { %>
+            <option value="<%=climatic_zone[count] %>">
+                <%= climatic_zone[count]%>
+            </option>
+            
+        <% } %>
+    </select>
     <input type="text" name="rainfall_min" class="form" placeholder="Enter Minimum Rainfall">
     <input type="text" name="rainfall_max" class="form" placeholder="Enter Maximum Rainfall">
     <input type="text" name="altitude_min" class="form" placeholder="Enter Minimum Altitude">
