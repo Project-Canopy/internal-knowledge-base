@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 var pool = mysql.createPool({
     host : 'localhost',
     user : 'root',
-    password : 'ryosei2K11213!',
+    password : 'project_canopy123',
     database : 'tree_db'
 });
 
@@ -252,7 +252,7 @@ app.post("/search_trees", function(req, res){
         english: req.body.english,
         somali: req.body.somali,
         arabic: req.body.arabic,
-        climatic_zone: req.query.climatic_zone,
+        climatic_zone: req.body.climatic_zone,
         rainfall_min: req.body.rainfall_min,
         rainfall_max: req.body.rainfall_max,
         altitude_min: req.body.altitude_min,
@@ -346,14 +346,14 @@ app.get("/", function(req, res){
                                , "Kafur", "Kaya", "Ghaf", "Filfilrafie", "Sisaban", "Mawaleh",
                                 "Bondog", "Mango", "Guwafa", "Luze"];
         
-        const climatic_zone = ["Very Dry", "Lowland Dry", "Highland Dry", "Lowland Wet", "Highland Wet"]
+        const climatic_zone = ["Very Dry", "Lowland Dry", "Highland Dry", "Lowland Wet", "Highland Wet"];
 
         const utilities_option = ["Toothbrush", "Toolhandles", "Timber", "Tannins", 
                                 "Soil Improvent", "Shelterbelt", "Sandune Fixation", 
                                 "Poles", "People Shade", "Nitrogen Fixation", "Medicine",
                                 "Livestock Shade", "Live Fencing", "Intercropping", "Insecticide",
                                 "Honey", "Hedge", "Gums", "Fuel", "Fruit", "Fodder", "Eddible Leaves", 
-                                "Dyes", "Dead Fencing", "Charcoal", "Carving", "Amenity"]
+                                "Dyes", "Dead Fencing", "Charcoal", "Carving", "Amenity"];
         //res.send("We have " + count + " users in database");
         res.render('dbms_home', {count: count, 
                                 select_option: select_option, 
