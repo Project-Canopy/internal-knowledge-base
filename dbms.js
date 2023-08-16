@@ -10,9 +10,9 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 var pool = mysql.createPool({
-    host : 'localhost',
-    user : 'root',
-    password : 'project_canopy123',
+    host : '192.168.1.172',
+    user : 'canopy',
+    password : 'project_canopy',
     database : 'tree_db'
 });
 
@@ -22,6 +22,7 @@ app.get("/search_trees", function(req, res){
     console.log(req.query)
     let somali = req.query.somali;
     let arabic = req.query.arabic;
+    let tree_type = req.query.tree_type;
     let climatic_zone = req.query.climatic_zone;
     let rainfall_min = req.query.rainfall_min;
     console.log(rainfall_min)
@@ -45,6 +46,9 @@ app.get("/search_trees", function(req, res){
     if(arabic && typeof arabic == 'string'){
         arabic = [arabic]
     }
+    if(tree_type && typeof tree_type == 'string'){
+        tree_type = [tree_type]
+    }
     if(climatic_zone && typeof climatic_zone == 'string'){
         climatic_zone = [climatic_zone]
     }
@@ -61,6 +65,9 @@ app.get("/search_trees", function(req, res){
     }
     if (select_list.includes("Other Regional Spelling")) {
         select_statement += ", GROUP_CONCAT(DISTINCT spelling SEPARATOR ', ')"
+    }
+    if (select_list.includes("Tree Type")) {
+        select_statement += ",  GROUP_CONCAT(DISTINCT tree_type SEPARATOR ', ')"
     }
     if (select_list.includes("Climatic Zone")) {
         select_statement += ", GROUP_CONCAT(DISTINCT climatic_zone SEPARATOR ', ') AS climatic_zone"
@@ -151,6 +158,22 @@ app.get("/search_trees", function(req, res){
         }
     }
 
+    if(tree_type){
+        if(where == 0){
+            q += "\nWHERE"
+            where = 1
+        }
+        if(or == 1) {
+            q += "\nOR"
+        } else { or = 1}
+        for (var count=0; count < tree_type.length; count++) {
+            if(count > 0){
+                q += ` OR`
+            }
+            q += ` tree_type LIKE "%${tree_type[count]}%"`
+        }
+    }
+
     if(climatic_zone){
         if(where == 0){
             q += "\nWHERE"
@@ -231,7 +254,7 @@ app.get("/search_trees", function(req, res){
     
     q += ` ORDER BY tree.id`
     let filter_name = {english: "English Name Selected", somali: "Somali Name Selected", arabic: "Arabic Name Selected", 
-                        climatic_zone: "Selected Climatic Zone", rainfall_min: "Minimum Rainfall Entered", 
+                        tree_type: "Tree Type Selected", climatic_zone: "Selected Climatic Zone", rainfall_min: "Minimum Rainfall Entered", 
                         rainfall_max: "Maximum Rainfall Entered", altitude_min: "Lowest Altitude Entered", 
                         altitude_max: "Highest Altitude Entered", utilities: "Utilites Selected", select: "Data Selected"}
     console.log(q)
@@ -252,6 +275,7 @@ app.post("/search_trees", function(req, res){
         english: req.body.english,
         somali: req.body.somali,
         arabic: req.body.arabic,
+        tree_type: req.body.tree_type,
         climatic_zone: req.body.climatic_zone,
         rainfall_min: req.body.rainfall_min,
         rainfall_max: req.body.rainfall_max,
@@ -317,7 +341,7 @@ app.get("/", function(req, res){
     pool.query(q, function(err, results){
         if (err) throw err;
         var count = results[0].count;
-        const select_option = ["Somali", "Arabic", "English", "Other Regional Spelling", 
+        const select_option = ["Somali", "Arabic", "English", "Other Regional Spelling", "Tree Type",
                                 "Climatic Zone","Minimum Rainfall", "Maximum Rainfall", 
                                 "Lowest Altitude", "Highest Altitude", "Utilities"];
         const english_option = ["Apple Ring Acacia", "Egyptian Thorn", "Gum Arabic",
@@ -346,6 +370,8 @@ app.get("/", function(req, res){
                                , "Kafur", "Kaya", "Ghaf", "Filfilrafie", "Sisaban", "Mawaleh",
                                 "Bondog", "Mango", "Guwafa", "Luze"];
         
+        const tree_type = ["Somali tree", "Foreign Tree", "Foreign fruit tree"]
+
         const climatic_zone = ["Very Dry", "Lowland Dry", "Highland Dry", "Lowland Wet", "Highland Wet"];
 
         const utilities_option = ["Toothbrush", "Toolhandles", "Timber", "Tannins", 
@@ -360,6 +386,7 @@ app.get("/", function(req, res){
                                 english_option: english_option,
                                 somali_option: somali_option,
                                 arabic_option: arabic_option,
+                                tree_type,
                                 climatic_zone: climatic_zone,
                                 utilities_option: utilities_option}
                                 );
