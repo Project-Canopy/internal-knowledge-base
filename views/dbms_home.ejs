@@ -45,7 +45,7 @@
     </select>
     <select name="tree_type" multiple multiselect-search="true" multiselect-select-all="true" 
     multiselect-max-items="3" onchange="console.log(this.selectedOptions)" placeholder="Enter Tree Type">
-        <% for(var count = 0; count < arabic_option.length; count++) { %>
+        <% for(var count = 0; count < tree_type.length; count++) { %>
             <option value="<%=tree_type[count] %>">
                 <%= tree_type[count]%>
             </option>
