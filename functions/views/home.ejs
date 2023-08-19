@@ -1,0 +1,16 @@
+<h1>Join Us</h1>
+<p>Enter email to join <strong><%=count%></strong> others on wait list
+</p>
+
+<form method="POST" action="/register">
+    <input type="text" name="first_name" class="form" placeholder="Enter  first_name">
+    <input type="text" name="last_name" class="form" placeholder="Enter last_name">
+    <button>Join Now</button>
+</form>
+
+<form method="POST" action="/update">
+    <input type="text" name="id" class="form" placeholder="Enter id">
+    <input type="text" name="new_first_name" class="form" placeholder="Update First Name">
+    <input type="text" name="new_last_name" class="form" placeholder="Update Last Name">
+    <button>Update</button>
+</form>

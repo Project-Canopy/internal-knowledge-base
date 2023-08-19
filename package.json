@@ -14,5 +14,8 @@
     "faker": "^5.5.3",
     "mysql2": "^3.5.2",
     "querystring": "^0.2.1"
+  },
+  "devDependencies": {
+    "firebase-tools": "^12.4.8"
   }
 }

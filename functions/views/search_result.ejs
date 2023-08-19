@@ -1,0 +1,53 @@
+<h1>This is the search result page.</h1>
+<body>
+    <div class="tree-data">
+<h2>The search is based on the following input: </h2>
+<h4>
+    <% for (let i in filter) { %>
+        <% if(filter[i]) { %>
+            <%= filter_name[i] %>: <%=filter[i] %> <br />
+        <% } %>
+    <% } %>
+</h4>
+    
+    <table border="1">
+        <tr>
+            <th>Botanical Name</th>
+            <% if(select_list.length != 0)  {%>
+                <% for(var count = 0; count < select_list.length; count++) { %>
+                    <th>
+                        <%= select_list[count]%>
+                    </th>
+                
+                <% } %>
+            <% } %>
+        </tr>
+        
+        
+        <%
+        if(treeData.length!=0){
+        var i=1;
+        treeData.forEach(function(results){
+        %>
+        <tr>
+            <td><%=results.botanical_name %></td>
+            <% for(var count = 0; count < select_list.length; count++) { %>
+                <td>
+                    <%=Object.values(results)[count+1] %>
+                </td>
+            
+            <% } %>
+            
+            
+            <!-- <td><%=results.lowest_altitude %></td>
+            <td><%=results.highest_altitude %></td> -->
+        </tr>
+        <%  i++; }) %>
+        <% } else{ %>
+            <tr>
+                <td colspan="7">No Data Found</td>
+            </tr>
+        <% } %>
+    </table>
+    </div>
+</body>
